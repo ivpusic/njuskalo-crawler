@@ -19,7 +19,7 @@ async function getOldAds(): Promise<IResultMap> {
   return {};
 }
 
-function findNewItems(old: IResultMap, current: IResultMap) {
+function findNewItems(old: IResultMap, current: IResultMap): IResultMap {
   const newItems = {};
 
   for (const href in current) {
@@ -31,7 +31,7 @@ function findNewItems(old: IResultMap, current: IResultMap) {
   return newItems;
 }
 
-async function sendResultsEmail(results: IResultMap) {
+async function sendResultsEmail(results: IResultMap): Promise<void> {
   const ads = Object.values(results);
   if (!ads.length) {
     return;
@@ -61,7 +61,7 @@ async function sendResultsEmail(results: IResultMap) {
   logger.info('sending email...');
 }
 
-async function main() {
+async function main(): Promise<void> {
   const oldAds = await getOldAds();
   logger.info('-------------------------------------');
 

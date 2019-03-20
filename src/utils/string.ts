@@ -1,4 +1,4 @@
-export function trim(str: string) {
+export function trim(str: string): string {
   if (str) {
     return str.trim();
   }

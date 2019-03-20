@@ -8,7 +8,7 @@ import { logger } from '../utils/logger';
 import { config } from '../config';
 import { IResultMap } from './results';
 
-const getUrl = (page: number) => `${config.njuskaloUrl}&page=${page}`;
+const getUrl = (page: number): string => `${config.njuskaloUrl}&page=${page}`;
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
@@ -31,7 +31,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
         const publishedAt = $(this).find('.entity-pub-date > .date--full').attr('datetime');
 
         if (publishedAt) {
-          if (moment(publishedAt).isAfter('2018-02-21T21:40:28+01:00')) {
+          if (moment(publishedAt).isAfter('2019-03-01T00:00:00+01:00')) {
             href = `https://www.njuskalo.hr${trim(href)}`;
             results[href] = {
               href,
@@ -57,7 +57,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(page: number) {
+async function processPage(page: number): Promise<IResultMap> {
   logger.info(`processing page ${page}`);
   logger.info('downloading html...');
 
@@ -74,7 +74,7 @@ async function processPage(page: number) {
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';
   if (!cheerio.load(html.data)('.EntityList--Regular').length) {
     logger.error('something is wrong with njuskalo html');
-    await sendEmail('pusic007@gmail.com', 'Parsing failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
+    await sendEmail(config.errorsReceiver, 'Parsing failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
     return {};
   }
 
@@ -93,7 +93,7 @@ async function processPage(page: number) {
   }
 }
 
-export default async function () {
+export default async () => {
   const results1 = await processPage(1);
   const results2 = await processPage(2);
 

@@ -8,9 +8,9 @@ import { logger } from '../utils/logger';
 import { config } from '../config';
 import { IResultMap } from './results';
 
-const getUrl = (page: number) => `${config.plaviUrl}&page=${page}`;
+const getUrl = (page: number): string => `${config.plaviUrl}&page=${page}`;
 
-function parseImage(str: string) {
+function parseImage(str: string): string {
   if (str && str.startsWith('/')) {
     return `https://www.oglasnik.hr${str}`;
   }
@@ -40,7 +40,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
         publishedAt = moment(publishedAt, 'DD.MM.YYYY.').toISOString();
 
         if (publishedAt) {
-          if (moment(publishedAt).isAfter('2018-02-20T00:00:00+01:00')) {
+          if (moment(publishedAt).isAfter('2019-03-01T00:00:00+01:00')) {
             href = trim(href);
             results[href] = {
               href,
@@ -66,7 +66,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(page: number) {
+async function processPage(page: number): Promise<IResultMap> {
   logger.info(`processing page ${page}`);
   logger.info('downloading html...');
 
@@ -82,14 +82,14 @@ async function processPage(page: number) {
   const regularSelector = '.category-fullrow-layout > .ad-box';
   if (!cheerio.load(html.data)('.category-fullrow-layout').length) {
     logger.error('something is wrong with plavi oglasnik html');
-    await sendEmail('pusic007@gmail.com', 'Parsing for plavi oglasnik failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
+    await sendEmail(config.errorsReceiver, 'Parsing for plavi oglasnik failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
     return {};
   }
 
   return extractAds(cheerio.load(html.data), regularSelector);
 }
 
-export default async function () {
+export default async () => {
   const results1 = await processPage(1);
   const results2 = await processPage(2);
 
