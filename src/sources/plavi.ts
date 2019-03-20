@@ -70,13 +70,7 @@ async function processPage(page: number): Promise<IResultMap> {
   logger.info(`processing page ${page}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(getUrl(page), {
-    headers: {
-      'cache-control': 'no-cache',
-      'pragma': 'no-cache',
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36'
-    }
-  });
+  const html = await axios.get(getUrl(page));
 
   logger.info('parsing regular ads...');
   const regularSelector = '.category-fullrow-layout > .ad-box';

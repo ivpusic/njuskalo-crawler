@@ -61,14 +61,7 @@ async function processPage(page: number): Promise<IResultMap> {
   logger.info(`processing page ${page}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(getUrl(page), {
-    headers: {
-      'cookie': 'xtvrn=$413863$; __gfp_64b=LqXXGkT3BGdIDwE_E2l_fL7Iu7C4qZbMj9ZYmZWNqtL.67; __uzma=952b2159-7174-4359-8f3b-ed409a0c3942; __uzmb=1513553216; njuskalo_accept_cookies=true; __ssuzjsr2=a9be0cd8e; __uzmaj2=7bf69937-2bcd-4913-95d7-861d3430e1cb9259; __uzmbj2=1513553307; _ga=GA1.2.884082042.1513553144; _STUU=6f955e4c-417e-4827-8bdb-742c23a85bb8; njupop=cf103f3429f6ffd510434497d368c8f2130a292e42cfdfeeedeaadc0ba6e167a; _gid=GA1.2.1888754035.1519050790; PHPSESSID=m8g27f5vboeil633m357578gn3; __utmc=228389250; __utmz=228389250.1519218318.14.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); DM_SitId220=true; DM_SitId220SecId924=true; comm100_guid2_1000306=94RqMb3yc0qMwAQF0TZ5Bw; __utma=228389250.884082042.1513553144.1519223147.1519241526.16; ccapi.accessToken=0c2662fe3aca9dd5fd077bec7536a149; DM_SitIdT220=true; DM_SitId220SecIdT924=true; __utmt=1; __uzmc=7132650880145; uzdbm_a=f023a4b8-851d-fa9d-252e-87f9978f558c; __uzmd=1519245743; __utmb=228389250.13.10.1519241526; __uzmcj2=1727837999141; __uzmdj2=1519245767; DotMetricsTimeOnPage=%7B%22C%22%3A%222018-02-21T21%3A42%3A21.6310485+01%3A00%22%2C%22E%22%3A%220dac0161-0baf-4f9a-817f-e740ed377cfd%22%2C%22S%22%3A924%2C%22T%22%3A37%7D',
-      'cache-control': 'no-cache',
-      'pragma': 'no-cache',
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36'
-    }
-  });
+  const html = await axios.get(getUrl(page));
 
   logger.info('parsing regular ads...');
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';
