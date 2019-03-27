@@ -9,6 +9,8 @@ yarn start
 
 ## Env variables
 
+You can create `.env` file and specify bellow env variables:
+
 ```bash
 EMAIL_AUTH_PASSWORD=
 EMAIL_AUTH_USERNAME=

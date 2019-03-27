@@ -84,6 +84,11 @@ async function processPage(page: number): Promise<IResultMap> {
 }
 
 export default async () => {
+  if (!config.plaviUrl) {
+    logger.info('skipping plavi oglasnik url...');
+    return {};
+  }
+
   const results1 = await processPage(1);
   const results2 = await processPage(2);
 
