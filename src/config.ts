@@ -17,6 +17,7 @@ const notBeforeDateTime = getEnvOrFail('NOT_BEFORE_DATE_TIME');
 
 const njuskaloUrl = process.env.NJUSKALO_URL;
 const plaviUrl = process.env.PLAVI_URL;
+const indexUrl = process.env.INDEX_URL;
 
 export const config = {
   emailFrom,
@@ -26,7 +27,8 @@ export const config = {
   emailReceivers,
   errorsReceiver,
   adsFile,
+  notBeforeDateTime,
   njuskaloUrl,
   plaviUrl,
-  notBeforeDateTime,
+  indexUrl,
 }

@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 import njuskalo from './sources/njuskalo';
 import plavi from './sources/plavi';
+import indeks from "./sources/indeks";
 import { sendEmail } from './utils/email';
 import { config } from './config';
 import { logger } from './utils/logger';
@@ -73,11 +74,15 @@ async function main(): Promise<void> {
   const plaviAdds = await plavi();
   logger.info('-------------------------------------');
 
-  const allNewItems = { ...njuskaloAdds, ...plaviAdds };
+  logger.info('running index oglasi crawler...');
+  const indeksAds = await indeks();
+  logger.info('-------------------------------------');
+
+  const allNewItems = { ...njuskaloAdds, ...plaviAdds, ...indeksAds };
   const newItems = findNewItems(oldAds, allNewItems);
   logger.info(`found ${Object.keys(newItems).length} new adds`);
 
-  await sendResultsEmail(newItems);
+  //await sendResultsEmail(newItems);
   fs.writeFileSync(config.adsFile, JSON.stringify({ ...oldAds, ...newItems }, null, 2));
   logger.info('-------------------------------------');
 }

@@ -19,6 +19,7 @@ NOT_BEFORE_DATE_TIME=
 # Optional, use an URL with preselected query options from the relevant site 
 NJUSKALO_URL=
 PLAVI_URL=
+INDEX_URL=
 ```
 
 ## Run
