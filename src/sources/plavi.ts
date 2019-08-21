@@ -40,7 +40,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
         publishedAt = moment(publishedAt, 'DD.MM.YYYY.').toISOString();
 
         if (publishedAt) {
-          if (moment(publishedAt).isAfter('2019-03-01T00:00:00+01:00')) {
+          if (moment(publishedAt).isAfter(config.notBeforeDateTime)) {
             href = trim(href);
             results[href] = {
               href,

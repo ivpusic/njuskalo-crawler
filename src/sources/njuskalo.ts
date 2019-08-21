@@ -31,7 +31,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
         const publishedAt = $(this).find('.entity-pub-date > .date--full').attr('datetime');
 
         if (publishedAt) {
-          if (moment(publishedAt).isAfter('2019-03-01T00:00:00+01:00')) {
+          if (moment(publishedAt).isAfter(config.notBeforeDateTime)) {
             href = `https://www.njuskalo.hr${trim(href)}`;
             results[href] = {
               href,
@@ -87,6 +87,11 @@ async function processPage(page: number): Promise<IResultMap> {
 }
 
 export default async () => {
+  if (!config.njuskaloUrl) {
+    logger.info('skipping njuskalo url...');
+    return {};
+  }
+
   const results1 = await processPage(1);
   const results2 = await processPage(2);
 
