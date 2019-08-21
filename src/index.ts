@@ -67,22 +67,22 @@ async function main(): Promise<void> {
   logger.info('-------------------------------------');
 
   logger.info('running njuskalo crawler...');
-  const njuskaloAdds = await njuskalo();
+  const njuskaloAdds = await njuskalo(2);
   logger.info('-------------------------------------');
 
   logger.info('running plavi oglasnik crawler...');
-  const plaviAdds = await plavi();
+  const plaviAdds = await plavi(2);
   logger.info('-------------------------------------');
 
   logger.info('running index oglasi crawler...');
-  const indeksAds = await indeks();
+  const indeksAds = await indeks(2);
   logger.info('-------------------------------------');
 
   const allNewItems = { ...njuskaloAdds, ...plaviAdds, ...indeksAds };
   const newItems = findNewItems(oldAds, allNewItems);
   logger.info(`found ${Object.keys(newItems).length} new adds`);
 
-  //await sendResultsEmail(newItems);
+  await sendResultsEmail(newItems);
   fs.writeFileSync(config.adsFile, JSON.stringify({ ...oldAds, ...newItems }, null, 2));
   logger.info('-------------------------------------');
 }

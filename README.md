@@ -16,7 +16,7 @@ ADS_FILE=
 # Moment compatible time string 
 NOT_BEFORE_DATE_TIME=
 
-# Optional, use an URL with preselected query options from the relevant site 
+# Optional, comma separated URLs with preselected query options from the relevant site 
 NJUSKALO_URL=
 PLAVI_URL=
 INDEX_URL=

@@ -6,9 +6,10 @@ import { sendEmail } from '../utils/email';
 import { trim } from '../utils/string';
 import { logger } from '../utils/logger';
 import { config } from '../config';
+import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
 
-const getUrl = (page: number): string => `${config.indexUrl}&num=${page}`;
+const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&num=${page}`;
 
 function parseImage(str: string): string {
   str = str.replace(/\?.*/, '');
@@ -68,11 +69,11 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(page: number): Promise<IResultMap> {
-  logger.info(`processing page ${page}`);
+async function processPage(url): Promise<IResultMap> {
+  logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(getUrl(page));
+  const html = await axios.get(url);
 
   logger.info('parsing regular ads...');
   const regularSelector = '.results > .OglasiRezHolder > a';
@@ -85,17 +86,20 @@ async function processPage(page: number): Promise<IResultMap> {
   return extractAds(cheerio.load(html.data), regularSelector);
 }
 
-export default async () => {
+export default async (pageCount) => {
   if (!config.indexUrl) {
     logger.info('skipping Index oglasi url...');
     return {};
   }
 
-  const results1 = await processPage(1);
-  const results2 = await processPage(2);
+  const urls = [];
+  for (let url of config.indexUrl.split(',')) {
+    for(let i = 1; i <= pageCount; i++) {
+      urls.push(urlWithPage(url, i))
+    }
+  }
 
-  return {
-    ...results1,
-    ...results2,
-  };
+  const results = await Promise.all(urls.map(processPage));
+
+  return arrayToObject(results);
 }

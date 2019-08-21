@@ -6,9 +6,10 @@ import { sendEmail } from '../utils/email';
 import { trim } from '../utils/string';
 import { logger } from '../utils/logger';
 import { config } from '../config';
+import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
 
-const getUrl = (page: number): string => `${config.njuskaloUrl}&page=${page}`;
+const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&page=${page}`;
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
@@ -57,11 +58,11 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(page: number): Promise<IResultMap> {
-  logger.info(`processing page ${page}`);
+async function processPage(url: string): Promise<IResultMap> {
+  logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(getUrl(page));
+  const html = await axios.get(url);
 
   logger.info('parsing regular ads...');
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';
@@ -74,9 +75,9 @@ async function processPage(page: number): Promise<IResultMap> {
   const regularResults = await extractAds(cheerio.load(html.data), regularSelector);
 
   let featuredResults = {};
-  if (page === 1) {
+  const featuredSelector = '.EntityList--VauVau > .EntityList-items > .EntityList-item';
+  if (!cheerio.load(html.data)('.EntityList--VauVau').length) {
     logger.info('parsing featured ads...');
-    const featuredSelector = '.EntityList--VauVau > .EntityList-items > .EntityList-item';
     featuredResults = await extractAds(cheerio.load(html.data), featuredSelector);
   }
 
@@ -86,17 +87,20 @@ async function processPage(page: number): Promise<IResultMap> {
   }
 }
 
-export default async () => {
+export default async (pageCount) => {
   if (!config.njuskaloUrl) {
     logger.info('skipping njuskalo url...');
     return {};
   }
 
-  const results1 = await processPage(1);
-  const results2 = await processPage(2);
-
-  return {
-    ...results1,
-    ...results2
+  const urls = [];
+  for (let url of config.njuskaloUrl.split(',')) {
+    for(let i = 1; i <= pageCount; i++) {
+      urls.push(urlWithPage(url, i))
+    }
   }
+
+  const results = await Promise.all(urls.map(processPage));
+
+  return arrayToObject(results);
 }
