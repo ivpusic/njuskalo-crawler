@@ -8,8 +8,12 @@ import { logger } from '../utils/logger';
 import { config } from '../config';
 import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
+import * as SocksProxyAgent from 'socks-proxy-agent'
 
 const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&page=${page}`;
+
+const httpsAgent = SocksProxyAgent('socks5://127.0.0.1:9501')
+const client = axios.create({ httpsAgent })
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
@@ -62,7 +66,7 @@ async function processPage(url: string): Promise<IResultMap> {
   logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(url);
+  const html = await client.get(url);
 
   logger.info('parsing regular ads...');
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';
