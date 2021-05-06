@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import axios from 'axios';
 import * as moment from 'moment';
+import * as SocksProxyAgent from 'socks-proxy-agent'
 
 import { sendEmail } from '../utils/email';
 import { trim } from '../utils/string';
@@ -10,6 +11,9 @@ import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
 
 const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&page=${page}`;
+
+const httpsAgent = config.socksProxyServer ? SocksProxyAgent(config.socksProxyServer) : undefined
+const client = axios.create({ httpsAgent })
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
@@ -62,7 +66,7 @@ async function processPage(url: string): Promise<IResultMap> {
   logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(url);
+  const html = await client.get(url);
 
   logger.info('parsing regular ads...');
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';

@@ -15,6 +15,8 @@ ERRORS_RECEIVER=
 ADS_FILE=
 # Moment compatible time string 
 NOT_BEFORE_DATE_TIME=
+# SOCKS proxy server url
+SOCKS_PROXY_SERVER=
 
 # Optional, comma separated URLs with preselected query options from the relevant site 
 NJUSKALO_URL=

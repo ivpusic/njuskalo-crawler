@@ -14,6 +14,7 @@ const emailReceivers = getEnvOrFail('EMAIL_RECEIVERS').split(',');
 const errorsReceiver = getEnvOrFail('ERRORS_RECEIVER');
 const adsFile = getEnvOrFail('ADS_FILE');
 const notBeforeDateTime = getEnvOrFail('NOT_BEFORE_DATE_TIME');
+const socksProxyServer = process.env.SOCKS_PROXY_SERVER
 
 const njuskaloUrl = process.env.NJUSKALO_URL;
 const plaviUrl = process.env.PLAVI_URL;
@@ -31,4 +32,5 @@ export const config = {
   njuskaloUrl,
   plaviUrl,
   indexUrl,
+  socksProxyServer
 }
