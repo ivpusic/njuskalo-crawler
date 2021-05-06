@@ -1,14 +1,19 @@
 import * as cheerio from 'cheerio';
 import axios from 'axios';
 import * as moment from 'moment';
+import * as SocksProxyAgent from 'socks-proxy-agent'
 
 import { sendEmail } from '../utils/email';
 import { trim } from '../utils/string';
 import { logger } from '../utils/logger';
 import { config } from '../config';
+import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
 
-const getUrl = (page: number): string => `${config.njuskaloUrl}&page=${page}`;
+const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&page=${page}`;
+
+const httpsAgent = config.socksProxyServer ? SocksProxyAgent(config.socksProxyServer) : undefined
+const client = axios.create({ httpsAgent })
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
@@ -31,7 +36,7 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
         const publishedAt = $(this).find('.entity-pub-date > .date--full').attr('datetime');
 
         if (publishedAt) {
-          if (moment(publishedAt).isAfter('2019-03-01T00:00:00+01:00')) {
+          if (moment(publishedAt).isAfter(config.notBeforeDateTime)) {
             href = `https://www.njuskalo.hr${trim(href)}`;
             results[href] = {
               href,
@@ -57,11 +62,11 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(page: number): Promise<IResultMap> {
-  logger.info(`processing page ${page}`);
+async function processPage(url: string): Promise<IResultMap> {
+  logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
-  const html = await axios.get(getUrl(page));
+  const html = await client.get(url);
 
   logger.info('parsing regular ads...');
   const regularSelector = '.EntityList--Regular > .EntityList-items > .EntityList-item';
@@ -74,9 +79,9 @@ async function processPage(page: number): Promise<IResultMap> {
   const regularResults = await extractAds(cheerio.load(html.data), regularSelector);
 
   let featuredResults = {};
-  if (page === 1) {
+  const featuredSelector = '.EntityList--VauVau > .EntityList-items > .EntityList-item';
+  if (!cheerio.load(html.data)('.EntityList--VauVau').length) {
     logger.info('parsing featured ads...');
-    const featuredSelector = '.EntityList--VauVau > .EntityList-items > .EntityList-item';
     featuredResults = await extractAds(cheerio.load(html.data), featuredSelector);
   }
 
@@ -86,12 +91,20 @@ async function processPage(page: number): Promise<IResultMap> {
   }
 }
 
-export default async () => {
-  const results1 = await processPage(1);
-  const results2 = await processPage(2);
-
-  return {
-    ...results1,
-    ...results2
+export default async (pageCount) => {
+  if (!config.njuskaloUrl) {
+    logger.info('skipping njuskalo url...');
+    return {};
   }
+
+  const urls = [];
+  for (let url of config.njuskaloUrl.split(',')) {
+    for(let i = 1; i <= pageCount; i++) {
+      urls.push(urlWithPage(url, i))
+    }
+  }
+
+  const results = await Promise.all(urls.map(processPage));
+
+  return arrayToObject(results);
 }

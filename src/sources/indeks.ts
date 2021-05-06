@@ -10,14 +10,16 @@ import { config } from '../config';
 import arrayToObject from '../utils/arrayToObject';
 import { IResultMap } from './results';
 
-const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&page=${page}`;
+const urlWithPage = (baseUrl: string, page: number): string => `${baseUrl}&num=${page}`;
 
 const httpsAgent = config.socksProxyServer ? SocksProxyAgent(config.socksProxyServer) : undefined
 const client = axios.create({ httpsAgent })
 
 function parseImage(str: string): string {
+  str = str.replace(/\?.*/, '');
+
   if (str && str.startsWith('/')) {
-    return `https://www.oglasnik.hr${str}`;
+    return `https://www.index.hr${str}`;
   }
 
   return str;
@@ -25,7 +27,7 @@ function parseImage(str: string): string {
 
 async function extractAds($: CheerioStatic, selector: string): Promise<IResultMap> {
   const ads = $(selector);
-  logger.info('extracting plavi oglasnik ads...');
+  logger.info('extracting Index oglasi ads...');
 
   return new Promise((resolve, reject) => {
     const results = {};
@@ -36,12 +38,12 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
 
     ads.each(function (index) {
       try {
-        let href = $(this).attr('href');
-        const title = $(this).find('.classified-title').text();
-        const description = '';
-        const image = parseImage($(this).find('.image-wrapper').data('src'));
-        const price = $(this).find('.price-kn').text();
-        let publishedAt = $(this).find('.ad-box-end > .date').text();
+        let href =$(this).attr('href');
+        const title = $(this).find('.result_body > .head > .title').text();
+        const description = $(this).find('.result_body > .head > .lead').text();;
+        const image = parseImage($(this).find('.result_photo > img').attr('src'));
+        const price = $(this).find('.result_body > .foot > .price > span').text();
+        let publishedAt = $(this).find('.result_body > .foot > .info > .icon-time').text().replace('Objava ', '');
         publishedAt = moment(publishedAt, 'DD.MM.YYYY.').toISOString();
 
         if (publishedAt) {
@@ -71,17 +73,17 @@ async function extractAds($: CheerioStatic, selector: string): Promise<IResultMa
   });
 }
 
-async function processPage(url: string): Promise<IResultMap> {
+async function processPage(url): Promise<IResultMap> {
   logger.info(`processing page ${url}`);
   logger.info('downloading html...');
 
   const html = await client.get(url);
 
   logger.info('parsing regular ads...');
-  const regularSelector = '.category-fullrow-layout > .ad-box';
-  if (!cheerio.load(html.data)('.category-fullrow-layout').length) {
-    logger.error('something is wrong with plavi oglasnik html');
-    await sendEmail(config.errorsReceiver, 'Parsing for plavi oglasnik failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
+  const regularSelector = '.results > .OglasiRezHolder > a';
+  if (!cheerio.load(html.data)('.results').length) {
+    logger.error('something is wrong with Index oglasi html');
+    await sendEmail(config.errorsReceiver, 'Parsing for Index oglasi failed', `<html><body><span>Something is wrong with input html. ${html.data}</span></body></html>`)
     return {};
   }
 
@@ -89,13 +91,13 @@ async function processPage(url: string): Promise<IResultMap> {
 }
 
 export default async (pageCount) => {
-  if (!config.plaviUrl) {
-    logger.info('skipping plavi oglasnik url...');
+  if (!config.indexUrl) {
+    logger.info('skipping Index oglasi url...');
     return {};
   }
 
   const urls = [];
-  for (let url of config.plaviUrl.split(',')) {
+  for (let url of config.indexUrl.split(',')) {
     for(let i = 1; i <= pageCount; i++) {
       urls.push(urlWithPage(url, i))
     }
