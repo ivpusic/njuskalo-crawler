@@ -13,7 +13,7 @@
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
     "dotenv": "^7.0.0",
-    "moment": "^2.20.1",
+    "moment": "^2.29.4",
     "nodemailer": "^4.5.0",
     "socks-proxy-agent": "^5.0.0",
     "winston": "^3.2.1"
